@@ -9,12 +9,12 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceRoot}/target/debug/sliding-block-solver.exe",
-            "args": [],
+            "args": ["puzzles/test.json"],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}",
             "environment": [],
             "preLaunchTask": "cargo build",
-            "internalConsoleOptions": "openOnSessionStart"
+            "internalConsoleOptions": "openOnSessionStart",
         },
     ]
 }

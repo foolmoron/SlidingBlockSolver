@@ -1,4 +1,5 @@
-use std::{collections::HashMap, fmt, fs};
+use std::{collections::HashMap, fs::OpenOptions, fmt, fs};
+use std::io::Write;
 use std::env;
 use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
@@ -33,7 +34,6 @@ fn main() {
     }));
     // store only the best path
     let mut best_length = usize::MAX;
-    let mut best_path: Vec<Board> = Vec::new();
     // DFS for all board states, skip ones already seen with a shorter path, store best path
     let mut shortest_path_to = HashMap::new();
     while let Some(state) = states.pop() {
@@ -48,14 +48,30 @@ fn main() {
         // find the one that matches the goal
         if state.1.wins(&board_config.goal_block, &board_config.goal_pos) {
             if new_length < best_length {
-                println!("Found new winner of path length {}", new_length);
                 best_length = new_length;
-                best_path = new_path;
+                // save results to file
+                println!("Found new winner of path length {}", new_length);
+                fs::create_dir_all("./results/").expect("mkdir failed");
+                let mut file = OpenOptions::new()
+                    .write(true)
+                    .append(true)
+                    .create(true)
+                    .open(format!("./results/{}.txt", new_length))
+                    .unwrap();
+                writeln!(file, "Winner!\n").expect("write failed");
+                for (i, s) in new_path.iter().enumerate() {
+                    writeln!(file, "{}:\n{}", i, s).expect("write failed");
+                }
             }
             continue;
         }
-        // track shortest path to already-seen ones
-        shortest_path_to.insert(state.1.clone(), new_length);
+        // track shortest path to already-seen ones, skipping ones that are too slow
+        let existing_length = shortest_path_to.entry(state.1.clone()).or_insert(new_length);
+        if new_length <= *existing_length {
+            *existing_length = new_length;
+        } else {
+            continue;
+        }
         // queue up the next moves, using the newly extended path
         for new_state in state.1.get_moves() {
             let existing_length = *shortest_path_to.get(&new_state).unwrap_or(&usize::MAX);
@@ -66,11 +82,7 @@ fn main() {
     }
     // print final
     if best_length != usize::MAX {
-        println!("Winner! After {} moves, path of {}:", moves, best_length);
-        println!("");
-        for (i, s) in best_path.iter().enumerate() {
-            println!("{}:\n{}", i, s);
-        }
+        println!("Winner! After {} moves, path of {}. See ./results/{}.txt", moves, best_length, best_length);
         return;
     } else {
         println!("FAILED after {} moves", moves);

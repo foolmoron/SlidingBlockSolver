@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::{collections::HashSet, fmt, collections::VecDeque, fs};
 use std::env;
 use std::collections::BTreeMap;
@@ -6,8 +7,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 struct BoardConfig {
     size: (i32, i32),
-    board: BTreeMap<String, Block>,
-    goal_block: String,
+    board: BTreeMap<char, Block>,
+    goal_block: char,
     goal_pos: (i32, i32),
 }
 
@@ -24,39 +25,36 @@ fn main() {
 
     // state = path to current state, board of block positions
     let mut moves: i64 = 0;
-    let mut states: VecDeque<(Vec<Board>, Board)> = VecDeque::with_capacity(1000);
-    states.push_back((Vec::new(), Board {
+    let mut states: VecDeque<(Vec<(char, char)>, Board)> = VecDeque::with_capacity(1000);
+    let initial_board = Board {
         size: board_config.size,
         state: board_config.board.iter()
             .map(|(name, block)| (name.to_owned(), block.to_owned()))
             .collect()
-    }));
+    };
+    states.push_back((vec![], initial_board.clone()));
     // BFS for all board states, skip ones already seen
     let mut already_seen = HashSet::new();
     while let Some(state) = states.pop_front() {
         moves += 1;
-        if moves % 10000 == 0 {
-            println!("Processed {} moves", moves);
+        if moves % 1000000 == 0 {
+            println!("Processed {} moves, {} in queue", moves, states.len());
         }
-        // add to path
-        let mut new_path = state.0;
-        new_path.push(state.1.clone());
-        let new_length = new_path.len();
         // find the one that matches the goal
         if state.1.wins(&board_config.goal_block, &board_config.goal_pos) {
-            println!("Winner! After {} moves, with path of {}", moves, new_length);
+            println!("Winner! After {} moves, with path of {}", moves, state.0.len());
             println!("");
-            for (i, s) in new_path.iter().enumerate() {
-                println!("{}:\n{}", i, s);
-            }
+            print_moves(initial_board.clone(), state.0.clone());
             return;
         }
         // track shortest path to already-seen ones, skipping ones that are too slow
         already_seen.insert(state.1.clone());
         // queue up the next moves, using the newly extended path
-        for new_state in state.1.get_moves() {
+        for (m, new_state) in state.1.get_moves() {
             if !already_seen.contains(&new_state) {
-                states.push_back((new_path.clone(), new_state));
+                let mut new_path = state.0.clone();
+                new_path.push(m);
+                states.push_back((new_path, new_state));
             }
         }
     }
@@ -67,20 +65,20 @@ fn main() {
 #[derive(Hash, Eq, PartialEq, Debug, Clone)]
 struct Board {
     size: (i32, i32),
-    state: Vec<(String, Block)>,
+    state: Vec<(char, Block)>,
 }
 
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let grid = self.get_grid(".".to_owned(), |name, _| name.clone());
-        let rows: Vec<String> = grid.iter().map(|row| row.join("")).collect();
+        let grid = self.get_grid('.', |name, _| name.clone());
+        let rows: Vec<String> = grid.iter().map(|row| row.iter().collect()).collect();
         writeln!(f, "{}", rows.join("\n"))
     }
 }
 
 impl Board {
 
-    fn get_grid<T: Clone>(&self, default_value: T, new_value: impl Fn(&String, &Block) -> T) -> Vec<Vec<T>> {
+    fn get_grid<T: Clone>(&self, default_value: T, new_value: impl Fn(&char, &Block) -> T) -> Vec<Vec<T>> {
         let mut grid = vec![vec![default_value; self.size.0 as usize]; self.size.1 as usize];
         for (name, block) in &self.state {
             for i in 0..block.size.0 {
@@ -96,13 +94,13 @@ impl Board {
         return grid;
     }
 
-    fn get_moves(&self) -> Vec<Board> {
+    fn get_moves(&self) -> Vec<((char, char), Board)> {
         // calculate blanks by filling in all the block spaces with false
         let blanks = self.get_grid(true, |_, _| false);
         // use blanks to check all 4 dirs for any valid moves
         let mut moves = Vec::new();
         for (index, (name, block)) in self.state.iter().enumerate() {
-            let dirs:[(i32, i32); 4] = [(0, 1), (0, -1), (1, 0), (-1, 0)];
+            let dirs:[(i32, i32, char); 4] = [(0, 1, 'v'), (0, -1, '^'), (1, 0, '>'), (-1, 0, '<')];
             for dir in &dirs {
                 let mut all_new_coords_valid = true;
                 // use horiz/vert block size depending on dir
@@ -126,22 +124,40 @@ impl Board {
                     new_block.pos.1 += dir.1;
 
                     let mut new_state = self.state.clone();
-                    new_state[index] = (name.to_owned(), new_block);
+                    new_state[index] = (*name, new_block);
 
-                    moves.push(Board {
-                        size: self.size,
-                        state: new_state,
-                    });
+                    moves.push((
+                        (*name, dir.2),
+                        Board {
+                            size: self.size,
+                            state: new_state,
+                        }
+                    ));
                 }
             }
         }
         return moves;
     }
 
-    fn wins(&self, block: &String, pos: &(i32, i32)) -> bool {
+    fn wins(&self, block: &char, pos: &(i32, i32)) -> bool {
         return self.state.iter()
             .find(|(n, _)| n == block)
             .map(|(_, b)| b.pos == *pos)
             .unwrap_or(false);
+    }
+}
+
+fn print_moves(mut board: Board, moves: Vec<(char, char)>) {
+    let mut dirs: HashMap<char, (i32, i32)> = HashMap::new();
+    dirs.insert('v', (0, 1));
+    dirs.insert('^', (0, -1));
+    dirs.insert('>', (1, 0));
+    dirs.insert('<', (-1, 0));
+    for (i, m) in moves.into_iter().enumerate() {
+        let mut pos = &mut board.state.iter_mut().find(|item| item.0 == m.0).unwrap().1.pos;
+        pos.0 += dirs[&m.1].0;
+        pos.1 += dirs[&m.1].1;
+        println!("{}:\n{} {}\n", i, m.0, m.1);
+        println!("{}", board);
     }
 }

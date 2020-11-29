@@ -1,5 +1,8 @@
+use std::io::stdout;
+use std::{fs::OpenOptions};
 use std::collections::HashMap;
-use std::{collections::HashSet, fmt, collections::VecDeque, fs};
+use std::io::Write;
+use std::{fmt, fs};
 use std::env;
 use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
@@ -25,41 +28,70 @@ fn main() {
 
     // state = path to current state, board of block positions
     let mut moves: i64 = 0;
-    let mut states: VecDeque<(Vec<(char, char)>, Board)> = VecDeque::with_capacity(1000);
+    let mut states: Vec<(Vec<(char, char)>, Board)> = Vec::with_capacity(1000);
     let initial_board = Board {
         size: board_config.size,
         state: board_config.board.iter()
             .map(|(name, block)| (name.to_owned(), block.to_owned()))
             .collect()
     };
-    states.push_back((vec![], initial_board.clone()));
-    // BFS for all board states, skip ones already seen
-    let mut already_seen = HashSet::new();
-    while let Some(state) = states.pop_front() {
+    states.push((vec![], initial_board.clone()));
+    // store only the best path
+    let mut best_length = usize::MAX;
+    let mut best_path: Vec<(char, char)> = Vec::new();
+    // DFS for all board states, skip ones already seen with a shorter path, store best path
+    let mut shortest_path_to = HashMap::new();
+    while let Some(state) = states.pop() {
         moves += 1;
         if moves % 1000000 == 0 {
             println!("Processed {} moves, {} in queue", moves, states.len());
         }
+        let path_len = state.0.len();
+        // stop if longer than best length so far
+        if path_len >= best_length {
+            continue;
+        }
         // find the one that matches the goal
         if state.1.wins(&board_config.goal_block, &board_config.goal_pos) {
-            println!("Winner! After {} moves, with path of {}", moves, state.0.len());
-            println!("");
-            print_moves(initial_board.clone(), state.0.clone());
-            return;
+            if path_len < best_length {
+                println!("Found better path of length {}", path_len);
+                best_length = path_len;
+                best_path = state.0.clone();
+                // write to file
+                fs::create_dir_all("./results/").expect("mkdir failed");
+                let mut file = OpenOptions::new()
+                    .write(true)
+                    .append(true)
+                    .create(true)
+                    .open(format!("./results/{}.txt", path_len))
+                    .unwrap();
+                writeln!(file, "Winner!\n").expect("write failed");
+                print_moves(&mut file, initial_board.clone(), best_path.clone());
+            }
         }
         // track shortest path to already-seen ones, skipping ones that are too slow
-        already_seen.insert(state.1.clone());
+        let shortest = *shortest_path_to.get(&state.1).unwrap_or(&usize::MAX);
+        if path_len < shortest {
+            shortest_path_to.insert(state.1.clone(), path_len);
+        }
         // queue up the next moves, using the newly extended path
         for (m, new_state) in state.1.get_moves() {
-            if !already_seen.contains(&new_state) {
+            if path_len < *shortest_path_to.get(&new_state).unwrap_or(&usize::MAX) {
                 let mut new_path = state.0.clone();
                 new_path.push(m);
-                states.push_back((new_path, new_state));
+                states.push((new_path, new_state));
             }
         }
     }
-    // failed
-    println!("FAILED after {} moves", moves);
+    // print result
+    if best_length < usize::MAX {
+        println!("Winner! After {} moves, with path of {}", moves, best_length);
+        println!("");
+        print_moves(&mut stdout(), initial_board.clone(), best_path.clone());
+
+    } else {
+        println!("FAILED after {} moves", moves);
+    }
 }
 
 #[derive(Hash, Eq, PartialEq, Debug, Clone)]
@@ -147,7 +179,7 @@ impl Board {
     }
 }
 
-fn print_moves(mut board: Board, moves: Vec<(char, char)>) {
+fn print_moves(out: &mut (impl Write + ?Sized), mut board: Board, moves: Vec<(char, char)>) {
     let mut dirs: HashMap<char, (i32, i32)> = HashMap::new();
     dirs.insert('v', (0, 1));
     dirs.insert('^', (0, -1));
@@ -157,7 +189,7 @@ fn print_moves(mut board: Board, moves: Vec<(char, char)>) {
         let mut pos = &mut board.state.iter_mut().find(|item| item.0 == m.0).unwrap().1.pos;
         pos.0 += dirs[&m.1].0;
         pos.1 += dirs[&m.1].1;
-        println!("{}:\n{} {}\n", i, m.0, m.1);
-        println!("{}", board);
+        out.write_fmt(format_args!("{}:\n{} {}\n\n", i, m.0, m.1)).expect("write failed");
+        out.write_fmt(format_args!("{}\n", board)).expect("write failed");
     }
 }

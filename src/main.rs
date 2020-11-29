@@ -89,21 +89,28 @@ impl Board {
     fn get_moves(&self) -> Vec<Board> {
         // calculate blanks by filling in all the block spaces with false
         let blanks = self.get_grid(true, |_, _| false);
-        // use blanks to figure all possible moves
+        // use blanks to check all 4 dirs for any valid moves
         let mut moves = Vec::new();
         for (index, (name, block)) in self.state.iter().enumerate() {
             let dirs:[(i32, i32); 4] = [(0, 1), (0, -1), (1, 0), (-1, 0)];
             for dir in &dirs {
-                let mut all_valid = true;
+                let mut all_new_coords_valid = true;
+                // use horiz/vert block size depending on dir
                 let size = if dir.0 == 0 { block.size.0 } else { block.size.1 };
                 for s in 0..size {
+                    // use near/far block edge based on dir
                     let edge_x = block.pos.0 + (block.size.0 - 1) * (if dir.0 == 1 { 1 } else { 0 });
                     let edge_y = block.pos.1 + (block.size.1 - 1) * (if dir.1 == 1 { 1 } else { 0 });
+                    // final motion coordinate to check for blank
                     let x = edge_x + (s * dir.1.abs()) + dir.0;
                     let y = edge_y + (s * dir.0.abs()) + dir.1;
-                    all_valid &= x >= 0 && y >= 0 && x < self.size.0 && y < self.size.1 && blanks[y as usize][x as usize];
+                    all_new_coords_valid &= blanks
+                        .get(y as usize)
+                            .map(|row| row.get(x as usize))
+                            .unwrap_or(Some(&false))
+                        .unwrap_or(&false);
                 }
-                if all_valid {
+                if all_new_coords_valid {
                     let mut new_block = block.clone();
                     new_block.pos.0 += dir.0;
                     new_block.pos.1 += dir.1;

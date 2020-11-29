@@ -9,7 +9,7 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceRoot}/target/debug/sliding-block-solver.exe",
-            "args": ["puzzles/test.json"],
+            "args": ["puzzles/test.json", "6"],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}",
             "environment": [],

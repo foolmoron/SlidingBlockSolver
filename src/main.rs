@@ -24,6 +24,10 @@ struct Block {
 fn main() {
     let args: Vec<String> = env::args().collect();
     let file = fs::read_to_string(&args[1]).unwrap();
+    let initial_best_length = args
+        .get(2).unwrap_or(&String::from(""))
+        .parse::<usize>().unwrap_or(usize::MAX - 1)
+        + 1;
     let board_config: BoardConfig = serde_json::from_str(&file).unwrap();
 
     // state = path to current state, board of block positions
@@ -37,7 +41,7 @@ fn main() {
     };
     states.push((vec![], initial_board.clone()));
     // store only the best path
-    let mut best_length = usize::MAX;
+    let mut best_length = initial_best_length;
     let mut best_path: Vec<(char, char)> = Vec::new();
     // DFS for all board states, skip ones already seen with a shorter path, store best path
     let mut shortest_path_to = HashMap::new();
@@ -84,7 +88,7 @@ fn main() {
         }
     }
     // print result
-    if best_length < usize::MAX {
+    if best_path.len() > 0 {
         println!("Winner! After {} moves, with path of {}", moves, best_length);
         println!("");
         print_moves(&mut stdout(), initial_board.clone(), best_path.clone());

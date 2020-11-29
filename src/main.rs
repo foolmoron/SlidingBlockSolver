@@ -1,5 +1,4 @@
-use std::{collections::HashMap, fs::OpenOptions, fmt, fs};
-use std::io::Write;
+use std::{collections::HashSet, fmt, collections::VecDeque, fs};
 use std::env;
 use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
@@ -25,18 +24,16 @@ fn main() {
 
     // state = path to current state, board of block positions
     let mut moves: i64 = 0;
-    let mut states: Vec<(Vec<Board>, Board)> = Vec::with_capacity(1000);
-    states.push((Vec::new(), Board {
+    let mut states: VecDeque<(Vec<Board>, Board)> = VecDeque::with_capacity(1000);
+    states.push_back((Vec::new(), Board {
         size: board_config.size,
         state: board_config.board.iter()
             .map(|(name, block)| (name.to_owned(), block.to_owned()))
             .collect()
     }));
-    // store only the best path
-    let mut best_length = usize::MAX;
-    // DFS for all board states, skip ones already seen with a shorter path, store best path
-    let mut shortest_path_to = HashMap::new();
-    while let Some(state) = states.pop() {
+    // BFS for all board states, skip ones already seen
+    let mut already_seen = HashSet::new();
+    while let Some(state) = states.pop_front() {
         moves += 1;
         if moves % 10000 == 0 {
             println!("Processed {} moves", moves);
@@ -47,46 +44,24 @@ fn main() {
         let new_length = new_path.len();
         // find the one that matches the goal
         if state.1.wins(&board_config.goal_block, &board_config.goal_pos) {
-            if new_length < best_length {
-                best_length = new_length;
-                // save results to file
-                println!("Found new winner of path length {}", new_length);
-                fs::create_dir_all("./results/").expect("mkdir failed");
-                let mut file = OpenOptions::new()
-                    .write(true)
-                    .append(true)
-                    .create(true)
-                    .open(format!("./results/{}.txt", new_length))
-                    .unwrap();
-                writeln!(file, "Winner!\n").expect("write failed");
-                for (i, s) in new_path.iter().enumerate() {
-                    writeln!(file, "{}:\n{}", i, s).expect("write failed");
-                }
+            println!("Winner! After {} moves, with path of {}", moves, new_length);
+            println!("");
+            for (i, s) in new_path.iter().enumerate() {
+                println!("{}:\n{}", i, s);
             }
-            continue;
+            return;
         }
         // track shortest path to already-seen ones, skipping ones that are too slow
-        let existing_length = shortest_path_to.entry(state.1.clone()).or_insert(new_length);
-        if new_length <= *existing_length {
-            *existing_length = new_length;
-        } else {
-            continue;
-        }
+        already_seen.insert(state.1.clone());
         // queue up the next moves, using the newly extended path
         for new_state in state.1.get_moves() {
-            let existing_length = *shortest_path_to.get(&new_state).unwrap_or(&usize::MAX);
-            if new_length < existing_length {
-                states.push((new_path.clone(), new_state));
+            if !already_seen.contains(&new_state) {
+                states.push_back((new_path.clone(), new_state));
             }
         }
     }
-    // print final
-    if best_length != usize::MAX {
-        println!("Winner! After {} moves, path of {}. See ./results/{}.txt", moves, best_length, best_length);
-        return;
-    } else {
-        println!("FAILED after {} moves", moves);
-    }
+    // failed
+    println!("FAILED after {} moves", moves);
 }
 
 #[derive(Hash, Eq, PartialEq, Debug, Clone)]

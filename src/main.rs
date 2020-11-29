@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fmt, fs};
+use std::{collections::HashMap, fmt, fs};
 use std::env;
 use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
@@ -22,36 +22,59 @@ fn main() {
     let file = fs::read_to_string(&args[1]).unwrap();
     let board_config: BoardConfig = serde_json::from_str(&file).unwrap();
 
-    // board state = positions of blocks & blanks
+    // state = path to current state, board of block positions
     let mut moves: i64 = 0;
-    let mut states = Vec::with_capacity(1000);
-    states.push(Board {
+    let mut states: Vec<(Vec<Board>, Board)> = Vec::with_capacity(1000);
+    states.push((Vec::new(), Board {
         size: board_config.size,
         state: board_config.board.iter()
             .map(|(name, block)| (name.to_owned(), block.to_owned()))
             .collect()
-    });
-    // DFS for all board states, skip already seen ones
-    let mut already_seen: HashSet<Board> = HashSet::new();
+    }));
+    // store only the best path
+    let mut best_length = usize::MAX;
+    let mut best_path: Vec<Board> = Vec::new();
+    // DFS for all board states, skip ones already seen with a shorter path, store best path
+    let mut shortest_path_to = HashMap::new();
     while let Some(state) = states.pop() {
         moves += 1;
-        println!("{}:\n{}", moves, state);
-        // find the one that matches the goal
-        if state.wins(&board_config.goal_block, &board_config.goal_pos) {
-            states.push(state);
-            println!("Winner! After {} moves", moves);
-            return;
+        if moves % 10000 == 0 {
+            println!("Processed {} moves", moves);
         }
-        // already seen
-        already_seen.insert(state.clone());
-        // possible moves = for all blocks, do blanks allow it to move in that dir
-        for new_state in state.get_moves() {
-            if !already_seen.contains(&new_state) {
-                states.push(new_state);
+        // add to path
+        let mut new_path = state.0;
+        new_path.push(state.1.clone());
+        let new_length = new_path.len();
+        // find the one that matches the goal
+        if state.1.wins(&board_config.goal_block, &board_config.goal_pos) {
+            if new_length < best_length {
+                println!("Found new winner of path length {}", new_length);
+                best_length = new_length;
+                best_path = new_path;
+            }
+            continue;
+        }
+        // track shortest path to already-seen ones
+        shortest_path_to.insert(state.1.clone(), new_length);
+        // queue up the next moves, using the newly extended path
+        for new_state in state.1.get_moves() {
+            let existing_length = *shortest_path_to.get(&new_state).unwrap_or(&usize::MAX);
+            if new_length < existing_length {
+                states.push((new_path.clone(), new_state));
             }
         }
     }
-    println!("FAILED after {} moves", moves);
+    // print final
+    if best_length != usize::MAX {
+        println!("Winner! After {} moves, path of {}:", moves, best_length);
+        println!("");
+        for (i, s) in best_path.iter().enumerate() {
+            println!("{}:\n{}", i, s);
+        }
+        return;
+    } else {
+        println!("FAILED after {} moves", moves);
+    }
 }
 
 #[derive(Hash, Eq, PartialEq, Debug, Clone)]

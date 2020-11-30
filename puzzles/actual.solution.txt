@@ -1,0 +1,706 @@
+Winner! After 46896823815 moves, with path of 83
+
+0:
+E >
+
+AABB
+AACC
+D.E.
+FGHH
+FGII
+
+1:
+E >
+
+AABB
+AACC
+D..E
+FGHH
+FGII
+
+2:
+D >
+
+AABB
+AACC
+.D.E
+FGHH
+FGII
+
+3:
+D >
+
+AABB
+AACC
+..DE
+FGHH
+FGII
+
+4:
+A v
+
+..BB
+AACC
+AADE
+FGHH
+FGII
+
+5:
+B <
+
+.BB.
+AACC
+AADE
+FGHH
+FGII
+
+6:
+B <
+
+BB..
+AACC
+AADE
+FGHH
+FGII
+
+7:
+C ^
+
+BBCC
+AA..
+AADE
+FGHH
+FGII
+
+8:
+E ^
+
+BBCC
+AA.E
+AAD.
+FGHH
+FGII
+
+9:
+D >
+
+BBCC
+AA.E
+AA.D
+FGHH
+FGII
+
+10:
+A >
+
+BBCC
+.AAE
+.AAD
+FGHH
+FGII
+
+11:
+F ^
+
+BBCC
+.AAE
+FAAD
+FGHH
+.GII
+
+12:
+F ^
+
+BBCC
+FAAE
+FAAD
+.GHH
+.GII
+
+13:
+G <
+
+BBCC
+FAAE
+FAAD
+G.HH
+G.II
+
+14:
+I <
+
+BBCC
+FAAE
+FAAD
+G.HH
+GII.
+
+15:
+H <
+
+BBCC
+FAAE
+FAAD
+GHH.
+GII.
+
+16:
+D v
+
+BBCC
+FAAE
+FAA.
+GHHD
+GII.
+
+17:
+E v
+
+BBCC
+FAA.
+FAAE
+GHHD
+GII.
+
+18:
+D v
+
+BBCC
+FAA.
+FAAE
+GHH.
+GIID
+
+19:
+E v
+
+BBCC
+FAA.
+FAA.
+GHHE
+GIID
+
+20:
+A >
+
+BBCC
+F.AA
+F.AA
+GHHE
+GIID
+
+21:
+F >
+
+BBCC
+.FAA
+.FAA
+GHHE
+GIID
+
+22:
+G ^
+
+BBCC
+.FAA
+GFAA
+GHHE
+.IID
+
+23:
+I <
+
+BBCC
+.FAA
+GFAA
+GHHE
+II.D
+
+24:
+G ^
+
+BBCC
+GFAA
+GFAA
+.HHE
+II.D
+
+25:
+D <
+
+BBCC
+GFAA
+GFAA
+.HHE
+IID.
+
+26:
+E v
+
+BBCC
+GFAA
+GFAA
+.HH.
+IIDE
+
+27:
+H >
+
+BBCC
+GFAA
+GFAA
+..HH
+IIDE
+
+28:
+I ^
+
+BBCC
+GFAA
+GFAA
+IIHH
+..DE
+
+29:
+D <
+
+BBCC
+GFAA
+GFAA
+IIHH
+.D.E
+
+30:
+E <
+
+BBCC
+GFAA
+GFAA
+IIHH
+.DE.
+
+31:
+D <
+
+BBCC
+GFAA
+GFAA
+IIHH
+D.E.
+
+32:
+E <
+
+BBCC
+GFAA
+GFAA
+IIHH
+DE..
+
+33:
+H v
+
+BBCC
+GFAA
+GFAA
+II..
+DEHH
+
+34:
+I >
+
+BBCC
+GFAA
+GFAA
+.II.
+DEHH
+
+35:
+I >
+
+BBCC
+GFAA
+GFAA
+..II
+DEHH
+
+36:
+G v
+
+BBCC
+.FAA
+GFAA
+G.II
+DEHH
+
+37:
+E ^
+
+BBCC
+.FAA
+GFAA
+GEII
+D.HH
+
+38:
+D >
+
+BBCC
+.FAA
+GFAA
+GEII
+.DHH
+
+39:
+G v
+
+BBCC
+.FAA
+.FAA
+GEII
+GDHH
+
+40:
+F <
+
+BBCC
+F.AA
+F.AA
+GEII
+GDHH
+
+41:
+E ^
+
+BBCC
+F.AA
+FEAA
+G.II
+GDHH
+
+42:
+E ^
+
+BBCC
+FEAA
+F.AA
+G.II
+GDHH
+
+43:
+D ^
+
+BBCC
+FEAA
+F.AA
+GDII
+G.HH
+
+44:
+D ^
+
+BBCC
+FEAA
+FDAA
+G.II
+G.HH
+
+45:
+G >
+
+BBCC
+FEAA
+FDAA
+.GII
+.GHH
+
+46:
+F v
+
+BBCC
+.EAA
+FDAA
+FGII
+.GHH
+
+47:
+E <
+
+BBCC
+E.AA
+FDAA
+FGII
+.GHH
+
+48:
+D ^
+
+BBCC
+EDAA
+F.AA
+FGII
+.GHH
+
+49:
+G ^
+
+BBCC
+EDAA
+FGAA
+FGII
+..HH
+
+50:
+H <
+
+BBCC
+EDAA
+FGAA
+FGII
+.HH.
+
+51:
+H <
+
+BBCC
+EDAA
+FGAA
+FGII
+HH..
+
+52:
+I v
+
+BBCC
+EDAA
+FGAA
+FG..
+HHII
+
+53:
+A v
+
+BBCC
+ED..
+FGAA
+FGAA
+HHII
+
+54:
+D >
+
+BBCC
+E.D.
+FGAA
+FGAA
+HHII
+
+55:
+E >
+
+BBCC
+.ED.
+FGAA
+FGAA
+HHII
+
+56:
+D >
+
+BBCC
+.E.D
+FGAA
+FGAA
+HHII
+
+57:
+E >
+
+BBCC
+..ED
+FGAA
+FGAA
+HHII
+
+58:
+B v
+
+..CC
+BBED
+FGAA
+FGAA
+HHII
+
+59:
+C <
+
+.CC.
+BBED
+FGAA
+FGAA
+HHII
+
+60:
+D ^
+
+.CCD
+BBE.
+FGAA
+FGAA
+HHII
+
+61:
+E >
+
+.CCD
+BB.E
+FGAA
+FGAA
+HHII
+
+62:
+B >
+
+.CCD
+.BBE
+FGAA
+FGAA
+HHII
+
+63:
+F ^
+
+.CCD
+FBBE
+FGAA
+.GAA
+HHII
+
+64:
+F ^
+
+FCCD
+FBBE
+.GAA
+.GAA
+HHII
+
+65:
+G <
+
+FCCD
+FBBE
+G.AA
+G.AA
+HHII
+
+66:
+A <
+
+FCCD
+FBBE
+GAA.
+GAA.
+HHII
+
+67:
+E v
+
+FCCD
+FBB.
+GAAE
+GAA.
+HHII
+
+68:
+E v
+
+FCCD
+FBB.
+GAA.
+GAAE
+HHII
+
+69:
+D v
+
+FCC.
+FBBD
+GAA.
+GAAE
+HHII
+
+70:
+D v
+
+FCC.
+FBB.
+GAAD
+GAAE
+HHII
+
+71:
+C >
+
+F.CC
+FBB.
+GAAD
+GAAE
+HHII
+
+72:
+B >
+
+F.CC
+F.BB
+GAAD
+GAAE
+HHII
+
+73:
+F >
+
+.FCC
+.FBB
+GAAD
+GAAE
+HHII
+
+74:
+G ^
+
+.FCC
+GFBB
+GAAD
+.AAE
+HHII
+
+75:
+G ^
+
+GFCC
+GFBB
+.AAD
+.AAE
+HHII
+
+76:
+A <
+
+GFCC
+GFBB
+AA.D
+AA.E
+HHII
+
+77:
+E <
+
+GFCC
+GFBB
+AA.D
+AAE.
+HHII
+
+78:
+E ^
